@@ -232,6 +232,32 @@ export namespace Config {
 
     result.plugin = deduplicatePlugins(result.plugin ?? [])
 
+    // 🎯 If OPENCODE_MCP_CONFIG_DIR is set, load MCP config ONLY from that directory
+    if (Flag.OPENCODE_MCP_CONFIG_DIR) {
+      log.info("Loading MCP config from specified directory", { dir: Flag.OPENCODE_MCP_CONFIG_DIR })
+      const mcpConfigPath = path.join(Flag.OPENCODE_MCP_CONFIG_DIR, "opencode.json")
+      const mcpConfigPathC = path.join(Flag.OPENCODE_MCP_CONFIG_DIR, "opencode.jsonc")
+      
+      for (const configPath of [mcpConfigPathC, mcpConfigPath]) {
+        try {
+          const content = await fs.readFile(configPath, "utf-8")
+          const parsed = JSON.parse(content)
+          if (parsed.mcp) {
+            result.mcp = parsed.mcp
+            log.info("Loaded MCP config from", { path: configPath, servers: Object.keys(parsed.mcp) })
+            break
+          }
+        } catch (err) {
+          // File doesn't exist or is invalid, try next
+        }
+      }
+      
+      if (!result.mcp || Object.keys(result.mcp).length === 0) {
+        log.warn("No MCP configuration found in specified directory", { dir: Flag.OPENCODE_MCP_CONFIG_DIR })
+        result.mcp = {}
+      }
+    }
+
     return {
       config: result,
       directories,

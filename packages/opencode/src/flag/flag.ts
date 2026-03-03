@@ -107,3 +107,15 @@ Object.defineProperty(Flag, "OPENCODE_CLIENT", {
   enumerable: true,
   configurable: false,
 })
+
+
+// Dynamic getter for OPENCODE_MCP_CONFIG_DIR
+// When set, MCP configuration will ONLY be loaded from this directory,
+// ignoring all other config sources (global, project, etc.)
+Object.defineProperty(Flag, "OPENCODE_MCP_CONFIG_DIR", {
+  get() {
+    return process.env["OPENCODE_MCP_CONFIG_DIR"]
+  },
+  enumerable: true,
+  configurable: false,
+})
